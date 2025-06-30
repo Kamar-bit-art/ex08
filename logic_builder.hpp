@@ -37,7 +37,8 @@ public:
 
   void normalize (std::shared_ptr<Formula>f);
   bool evaluate (std::shared_ptr<Formula> f, const std::vector<bool> &model) const;
-  using simplifier_cache = std::unordered_map<std::shared_ptr<Formula>, std::shared_ptr<Formula> /* Do you need this?, Logic_Node_Hash, Logic_Node_Equal*/>; // TODO exercise 5
+  std::vector<std::shared_ptr<Formula>> collect_children(std::shared_ptr<Formula> f);
+  using simplifier_cache = std::unordered_map<std::shared_ptr<Formula>, std::shared_ptr<Formula>, Logic_Node_Hash, Logic_Node_Equal>; // Exercise 5: Cache for simplified formulas
 
   void clear_cache() { simplified_representative.clear(); } // for the fuzzer
 

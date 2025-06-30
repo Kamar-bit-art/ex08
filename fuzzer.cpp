@@ -118,7 +118,38 @@ void Fuzzer::test_simplify ([[maybe_unused]] bool verbose) {
     std::cout << "test simplify\t" << *orig << "\nafter simplification\t"
               << *simplified << "\n";
 
-  // TODO exercise 6: here you should check that it is fully simplified
+  // First, test that the simplified formula is semantically equivalent to the original
+  test_same_models(simplified, orig);
+  
+  // Only perform structural checks on gates, not on constants or variables
+  auto gate = std::dynamic_pointer_cast<Gate>(simplified);
+  if (gate) {
+    const auto& direct_children = gate->getChildren();
+    
+    // Check for constants in direct children of AND/OR gates
+    // Constants should have been simplified away according to the rules
+    for (const auto& child : direct_children) {
+      if (std::dynamic_pointer_cast<Constant>(child)) {
+        if (verbose)
+          std::cout << "Error: Found constant in direct children of simplified formula" << std::endl;
+        abort_err();
+      }
+    }
+    
+    // Check for duplicated nodes (perfect structural sharing)
+    for (size_t i = 0; i < direct_children.size(); ++i) {
+      for (size_t j = i + 1; j < direct_children.size(); ++j) {
+        if (*direct_children[i] == *direct_children[j]) {
+          if (verbose)
+            std::cout << "Error: Found duplicate nodes, imperfect structural sharing" << std::endl;
+          abort_err();
+        }
+      }
+    }
+  }
+  
+  // Always add the simplified formula to the cache
+  cache.push_back(simplified);
 }
 
 void Fuzzer::prepopulate () {
